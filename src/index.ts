@@ -5,6 +5,8 @@ dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' 
 import multer from 'multer'
 import path from 'path'
 
+import * as s3Client from './s3Client'
+
 const app = express();
 
 app.use(
@@ -18,8 +20,11 @@ app.use(
   }).single('file')
 )
 
-app.post('/upload', (req, res, next) => {
-  res.send('File uploaded!');
+app.post('/upload', async (req, res, next) => {
+  const file = req.file
+  const url = await s3Client.uploadFile(file.originalname, file.path, file.mimetype);
+
+  res.send(`${url}`);
 });
 
 app.listen(process.env.PORT || 3333);
